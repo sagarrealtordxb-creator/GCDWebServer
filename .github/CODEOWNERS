@@ -1,0 +1,16 @@
+# CODEOWNERS file for GCDWebServer
+# This file defines who reviews and approves changes to critical files
+
+# Default owners for all files
+* @sagarrealtordxb-creator
+
+# Security-critical files require review
+SECURITY.md @sagarrealtordxb-creator
+.github/workflows/security*.yml @sagarrealtordxb-creator
+.github/dependabot.yml @sagarrealtordxb-creator
+
+# Branch protection configuration
+.github/branch-protection.yml @sagarrealtordxb-creator
+
+# All changes to core server files
+GCDWebServer* @sagarrealtordxb-creator

@@ -1,0 +1,115 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  secret-scanning:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python', 'javascript']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  docker-scanning:
+    name: Docker Image Scanning
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'docker') || contains(github.event.head_commit.message, 'container')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t gcdwebserver:test . 2>/dev/null || echo "No Dockerfile found"
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'gcdwebserver:test'
+          format: 'sarif'
+          output: 'docker-scan-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Docker scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'docker-scan-results.sarif'
+        continue-on-error: true
+
+  permission-audit:
+    name: Repository Permission Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for overly permissive file permissions
+        run: |
+          echo "Checking for world-writable files..."
+          find . -type f -perm -002 -not -path './.git/*' | tee world-writable.txt || true
+          
+          echo "Checking for world-readable sensitive files..."
+          find . -type f \( -name "*.key" -o -name "*.pem" -o -name "*.secret" \) -perm -004 | tee world-readable-secrets.txt || true
+          
+          if [ -s world-writable.txt ] || [ -s world-readable-secrets.txt ]; then
+            echo "⚠️ Warning: Found files with overly permissive access!"
+            exit 1
+          fi

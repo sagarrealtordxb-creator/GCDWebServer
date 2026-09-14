@@ -1,5 +1,118 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-xcuserdata
-project.xcworkspace
-/build
-/Carthage/Build
+
+# Secrets and credentials (CRITICAL)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+secrets.json
+config.local.json
+.aws/credentials
+.aws/config
+.ssh/
+oauth_tokens
+*.token
+*.secret
+credentials.json
+service-account-key.json
+private_key.pem
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+temp/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Node (if applicable)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+docker-compose.override.yml
+
+# Security scan results
+trivy-results.sarif
+docker-scan-results.sarif
+codeql-results.sarif
+secret-scan-results.txt
+world-writable.txt
+world-readable-secrets.txt
+
+# Dependency lock files (be careful with versioning)
+Pipfile.lock
+
+# Build artifacts
+*.o
+*.a
+*.dylib
